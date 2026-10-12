@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FileText, Users, LogOut, Shield, TrendingUp, AlertCircle, CheckCircle, Clock, History } from 'lucide-react';
