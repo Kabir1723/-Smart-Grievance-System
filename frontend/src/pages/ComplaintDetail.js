@@ -6,7 +6,7 @@ import {
   ArrowLeft, FileText, Tag, MapPin, Calendar, AlertCircle, Trash2,
   Upload, Paperclip, Download, XCircle, RotateCcw, Star
 } from 'lucide-react';
-import { complaintAPI } from '../services/api';
+import { API_ORIGIN, complaintAPI } from '../services/api';
 import './ComplaintDetail.css';
 
 const ComplaintDetail = () => {
@@ -293,7 +293,7 @@ const ComplaintDetail = () => {
                 {attachments.map((a) => (
                   <a
                     key={a.id}
-                    href={`${(process.env.REACT_APP_API_URL || 'http://localhost:5000/api').replace('/api', '')}${a.url}`}
+                    href={`${API_ORIGIN}${a.url}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     style={{

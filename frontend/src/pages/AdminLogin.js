@@ -4,8 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { toast } from 'react-toastify';
 import { Mail, Lock, Shield } from 'lucide-react';
-import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
+import api from '../services/api';
 import './Auth.css';
 
 const AdminLogin = () => {
@@ -30,14 +30,7 @@ const AdminLogin = () => {
     setLoading(true);
 
     try {
-      const API_BASE_URL =
-        process.env.REACT_APP_API_URL ||
-        'http://localhost:5000/api';
-
-      const response = await axios.post(
-        `${API_BASE_URL}/admin/login`,
-        formData
-      );
+      const response = await api.post('/admin/login', formData);
 
       login(response.data.user, response.data.token);
 

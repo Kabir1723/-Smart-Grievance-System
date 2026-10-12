@@ -510,7 +510,7 @@ async function sendEmailNotification(subject, message, complaintDetails) {
             </div>
             
             <div style="text-align: center; margin-top: 30px;">
-              <a href="http://localhost:3000/admin" 
+              <a href="${FRONTEND_URL}/admin/dashboard" 
                  style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
                         color: white; 
                         padding: 12px 30px; 
@@ -664,7 +664,7 @@ async function notifyAdminAboutComplaint(complaintDetails) {
     );
 
     // Send SMS
-    const smsMessage = `🚨 New ${complaintDetails.priority} Priority Complaint #${complaintDetails.id}\nTitle: ${complaintDetails.title}\nCategory: ${complaintDetails.category}\nFrom: ${complaintDetails.userName}\nView: http://localhost:3000/admin`;
+    const smsMessage = `🚨 New ${complaintDetails.priority} Priority Complaint #${complaintDetails.id}\nTitle: ${complaintDetails.title}\nCategory: ${complaintDetails.category}\nFrom: ${complaintDetails.userName}\nView: ${FRONTEND_URL}/admin/dashboard`;
     await sendSMSNotification(smsMessage);
 
   } catch (error) {
