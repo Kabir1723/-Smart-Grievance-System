@@ -566,6 +566,9 @@ async function sendVerificationEmail(toEmail, name, token) {
   }
   const verifyLink = `${FRONTEND_URL}/verify-email?token=${token}`;
   await createEmailTransporter().sendMail({
+    from: `"Grievance System" <${process.env.EMAIL_USER}>`,
+    to: toEmail,
+    subject: 'Verify your email address',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; text-align:center;">
@@ -591,7 +594,6 @@ async function sendPasswordResetEmail(toEmail, name, token) {
     return;
   }
   const resetLink = `${FRONTEND_URL}/reset-password?token=${token}`;
-  await emailTransporter.sendMail({
   await createEmailTransporter().sendMail({
     from: `"Grievance System" <${process.env.EMAIL_USER}>`,
     to: toEmail,
