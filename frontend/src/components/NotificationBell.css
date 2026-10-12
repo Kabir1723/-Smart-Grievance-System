@@ -352,57 +352,47 @@
 
 @media (max-width: 480px) {
   .notification-dropdown {
-    width: calc(100vw - 24px);
-    max-width: 320px;
-    right: -12px;
+    top: 65px;
+    left: 8px;
+    right: 8px;
     max-height: 75vh;
   }
 
-  .dropdown-header {
-    padding: 16px;
+  .notification-list {
+    max-height: calc(75vh - 65px);
+  }
+
+  .notif-icon {
+    width: 38px;
+    height: 38px;
+    font-size: 15px;
+  }
+}
+
+/* ── Mobile: switch to fixed positioning so it never goes off-screen ── */
+@media (max-width: 768px) {
+  .notification-dropdown {
+    position: fixed;
+    top: 70px;
+    left: 10px;
+    right: 10px;
+    width: auto;
+    max-width: 100%;
+    max-height: 80vh;
+    /* reset the absolute-positioned right/transform */
+    transform: none;
+  }
+
+  .notification-list {
+    max-height: calc(80vh - 70px);
   }
 
   .notification-item {
     padding: 14px 16px;
-    gap: 12px;
   }
 
-  .notif-icon {
-    width: 40px;
-    height: 40px;
-    font-size: 16px;
-  }
-
-  .notification-list {
-    max-height: calc(75vh - 70px);
-  }
-}
-
-/* ── Extend NotificationBell responsiveness ──────────── */
-@media (max-width: 768px) {
-  /* Dropdown: cap to viewport, shift left if needed */
-  .notification-dropdown {
-    width: min(380px, calc(100vw - 20px));
-    right: 0;
-    max-height: 80vh;
-  }
-
-  .notification-list {
-    max-height: calc(80vh - 80px);
-  }
-
-  /* Notification items: slightly tighter */
-  .notification-item {
-    padding: 14px 18px;
-  }
-}
-
-/* Keep dropdown from going off-screen on small phones */
-@media (max-width: 480px) {
-  .notification-dropdown {
-    /* already has right: -12px — ensure it doesn't go off left side */
-    max-width: calc(100vw - 20px);
-    left: auto;
+  .dropdown-header {
+    padding: 14px 16px;
   }
 }
 
