@@ -76,6 +76,9 @@ function createEmailTransporter() {
     host: 'smtp.gmail.com',
     port: 465,
     secure: true,   // SSL
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASSWORD   // Gmail App Password (16 chars, no spaces)
@@ -463,7 +466,6 @@ async function createNotification(userId, complaintId, message, type = 'info') {
   }
 }
 
-// Send Email Notification
 async function sendEmailNotification(subject, message, complaintDetails) {
   try {
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
@@ -552,7 +554,10 @@ async function sendEmailNotification(subject, message, complaintDetails) {
       `
     };
 
-    await createEmailTransporter().sendMail(mailOptions);
+    const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Email send timed out after 15s')), 15000)
+    );
+    await Promise.race([createEmailTransporter().sendMail(mailOptions), timeout]);
     console.log('✓ Email notification sent to admin');
   } catch (error) {
     console.error('Email notification error:', error.message);
