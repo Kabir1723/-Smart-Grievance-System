@@ -70,16 +70,17 @@ const upload = multer({
   }
 });
 
-// Email transporter configuration
-const emailTransporter = nodemailer.createTransport({
-  host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-  port: process.env.EMAIL_PORT || 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD
-  }
-});
+// Email transporter — uses Gmail service shorthand (port 465 SSL).
+// This bypasses the port-587 block that Render free tier applies to raw SMTP.
+function createEmailTransporter() {
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASSWORD   // Gmail App Password (16 chars, no spaces)
+    }
+  });
+}
 
 // Twilio client configuration
 let twilioClient = null;
@@ -550,7 +551,7 @@ async function sendEmailNotification(subject, message, complaintDetails) {
       `
     };
 
-    await emailTransporter.sendMail(mailOptions);
+    await createEmailTransporter().sendMail(mailOptions);
     console.log('✓ Email notification sent to admin');
   } catch (error) {
     console.error('Email notification error:', error.message);
@@ -564,10 +565,7 @@ async function sendVerificationEmail(toEmail, name, token) {
     return;
   }
   const verifyLink = `${FRONTEND_URL}/verify-email?token=${token}`;
-  await emailTransporter.sendMail({
-    from: `"Grievance System" <${process.env.EMAIL_USER}>`,
-    to: toEmail,
-    subject: 'Verify your email address',
+  await createEmailTransporter().sendMail({
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 20px; text-align:center;">
@@ -594,6 +592,7 @@ async function sendPasswordResetEmail(toEmail, name, token) {
   }
   const resetLink = `${FRONTEND_URL}/reset-password?token=${token}`;
   await emailTransporter.sendMail({
+  await createEmailTransporter().sendMail({
     from: `"Grievance System" <${process.env.EMAIL_USER}>`,
     to: toEmail,
     subject: 'Reset your password',
@@ -1896,14 +1895,8 @@ app.post('/api/admin/test-notifications', authenticateToken, async (req, res) =>
     if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD || process.env.EMAIL_PASSWORD === 'your-app-password-here') {
       results.email = 'SKIPPED: EMAIL_USER or EMAIL_PASSWORD not set on Render';
     } else {
-      const nodemailer = require('nodemailer');
-      const transporter = nodemailer.createTransport({
-        service: 'gmail',
-        host: 'smtp.gmail.com',
-        port: 587,
-        secure: false,
-        auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASSWORD }
-      });
+      const transporter = createEmailTransporter();
+      await transporter.verify();
       await transporter.sendMail({
         from: `"Grievance System" <${process.env.EMAIL_USER}>`,
         to: process.env.ADMIN_EMAIL,
