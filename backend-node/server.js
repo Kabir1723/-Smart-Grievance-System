@@ -149,6 +149,7 @@ async function initializeDatabase() {
     }
 
     await createTables();
+    await ensureAdminAccount();
     console.log('✓ All tables created/verified');
   } catch (error) {
     console.error(
@@ -158,6 +159,37 @@ async function initializeDatabase() {
     );
     process.exit(1);
   }
+}
+
+// Bootstrap the administrator from deployment environment variables. This is
+// intentionally skipped for local installs that have not configured admin
+// credentials, and never writes the password to logs or source control.
+async function ensureAdminAccount() {
+  const email = process.env.ADMIN_EMAIL && process.env.ADMIN_EMAIL.trim();
+  const password = process.env.ADMIN_PASSWORD;
+
+  if (!email || !password) {
+    console.warn('⚠ Admin bootstrap skipped: set ADMIN_EMAIL and ADMIN_PASSWORD in the deployment environment.');
+    return;
+  }
+
+  const passwordHash = await bcrypt.hash(password, 12);
+  const phone = process.env.ADMIN_PHONE || '0000000000';
+
+  await pool.query(
+    `INSERT INTO users (name, email, phone, password, address, role, is_verified, created_at)
+     VALUES (?, ?, ?, ?, ?, 'admin', TRUE, NOW())
+     ON DUPLICATE KEY UPDATE
+       name = VALUES(name),
+       phone = VALUES(phone),
+       password = VALUES(password),
+       address = VALUES(address),
+       role = 'admin',
+       is_verified = TRUE`,
+    ['Administrator', email, phone, passwordHash, 'Admin Office']
+  );
+
+  console.log('✓ Admin account created/updated from deployment environment');
 }
 
 async function createTables() {
