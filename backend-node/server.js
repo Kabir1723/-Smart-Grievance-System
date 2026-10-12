@@ -270,6 +270,26 @@ async function createTables() {
       // Ignore error if column already exists
     }
 
+    // Add sla_deadline column for existing databases created before SLA tracking
+    try {
+      await connection.query('ALTER TABLE complaints ADD COLUMN sla_deadline DATETIME');
+    } catch (e) { /* already exists */ }
+
+    // Add resolved_at column for existing databases
+    try {
+      await connection.query('ALTER TABLE complaints ADD COLUMN resolved_at DATETIME');
+    } catch (e) { /* already exists */ }
+
+    // Add escalation_level column for existing databases
+    try {
+      await connection.query('ALTER TABLE complaints ADD COLUMN escalation_level INT DEFAULT 0');
+    } catch (e) { /* already exists */ }
+
+    // Add assigned_to column for existing databases
+    try {
+      await connection.query('ALTER TABLE complaints ADD COLUMN assigned_to INT');
+    } catch (e) { /* already exists */ }
+
     // Allow complaints to be cancelled by their owner
     try {
       await connection.query(
@@ -1741,7 +1761,9 @@ app.post('/api/admin/login', async (req, res) => {
 app.get('/api/admin/complaints', authenticateToken, async (req, res) => {
   try {
     const [complaints] = await pool.query(`
-      SELECT c.*, u.name as user_name, u.email as user_email, u.phone as user_phone
+      SELECT c.id, c.title, c.description, c.category, c.location, c.priority, c.status,
+             c.created_at, c.updated_at,
+             u.name as user_name, u.email as user_email, u.phone as user_phone
       FROM complaints c
       JOIN users u ON c.user_id = u.id
       ORDER BY c.created_at DESC
@@ -1767,14 +1789,26 @@ app.get('/api/admin/stats', authenticateToken, async (req, res) => {
     const [highPriority] = await pool.query('SELECT COUNT(*) as count FROM complaints WHERE priority = "High"');
     const [mediumPriority] = await pool.query('SELECT COUNT(*) as count FROM complaints WHERE priority = "Medium"');
     const [lowPriority] = await pool.query('SELECT COUNT(*) as count FROM complaints WHERE priority = "Low"');
-    const [overdueComplaints] = await pool.query('SELECT COUNT(*) as count FROM complaints WHERE sla_deadline < NOW() AND status NOT IN ("Resolved", "Closed")');
 
-    // Average resolution time
-    const [avgResolution] = await pool.query(`
-      SELECT AVG(TIMESTAMPDIFF(HOUR, created_at, resolved_at)) as avg_hours 
-      FROM complaints 
-      WHERE resolved_at IS NOT NULL
-    `);
+    // sla_deadline / resolved_at queries are safe-guarded — these columns may not exist
+    // on databases that were created before the SLA feature was added. The ALTER TABLE
+    // migration above adds them on next boot, but the query runs before that finishes
+    // on the very first deploy with this code, so we catch and default to 0.
+    let overdueCount = 0;
+    try {
+      const [overdueComplaints] = await pool.query('SELECT COUNT(*) as count FROM complaints WHERE sla_deadline < NOW() AND status NOT IN ("Resolved", "Closed")');
+      overdueCount = overdueComplaints[0].count;
+    } catch (e) { /* column not yet migrated */ }
+
+    let avgHours = 0;
+    try {
+      const [avgResolution] = await pool.query(`
+        SELECT AVG(TIMESTAMPDIFF(HOUR, created_at, resolved_at)) as avg_hours 
+        FROM complaints 
+        WHERE resolved_at IS NOT NULL
+      `);
+      avgHours = avgResolution[0].avg_hours ? Math.round(avgResolution[0].avg_hours) : 0;
+    } catch (e) { /* column not yet migrated */ }
 
     res.json({
       stats: {
@@ -1788,8 +1822,8 @@ app.get('/api/admin/stats', authenticateToken, async (req, res) => {
         highPriority: highPriority[0].count,
         mediumPriority: mediumPriority[0].count,
         lowPriority: lowPriority[0].count,
-        overdue: overdueComplaints[0].count,
-        avgResolutionHours: avgResolution[0].avg_hours ? Math.round(avgResolution[0].avg_hours) : 0
+        overdue: overdueCount,
+        avgResolutionHours: avgHours
       }
     });
   } catch (error) {
