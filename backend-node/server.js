@@ -70,11 +70,12 @@ const upload = multer({
   }
 });
 
-// Email transporter — uses Gmail service shorthand (port 465 SSL).
-// This bypasses the port-587 block that Render free tier applies to raw SMTP.
+// Email transporter — port 465 SSL works on Render free tier (587 is blocked).
 function createEmailTransporter() {
   return nodemailer.createTransport({
-    service: 'gmail',
+    host: 'smtp.gmail.com',
+    port: 465,
+    secure: true,   // SSL
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASSWORD   // Gmail App Password (16 chars, no spaces)
@@ -1898,7 +1899,6 @@ app.post('/api/admin/test-notifications', authenticateToken, async (req, res) =>
       results.email = 'SKIPPED: EMAIL_USER or EMAIL_PASSWORD not set on Render';
     } else {
       const transporter = createEmailTransporter();
-      await transporter.verify();
       await transporter.sendMail({
         from: `"Grievance System" <${process.env.EMAIL_USER}>`,
         to: process.env.ADMIN_EMAIL,
