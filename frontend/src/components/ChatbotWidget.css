@@ -229,3 +229,50 @@
     width: calc(100vw - 24px);
   }
 }
+
+/* ── Extend ChatbotWidget responsiveness ─────────────── */
+@media (max-width: 768px) {
+  /* Shrink window height to stay within viewport on tablets */
+  .chatbot-window {
+    max-height: calc(100vh - 100px);
+  }
+}
+
+@media (max-width: 480px) {
+  /* Window: full width, capped height, positioned from bottom of FAB */
+  .chatbot-window {
+    width: calc(100vw - 24px);
+    max-height: calc(100vh - 90px);
+    /* Ensure it doesn't go off the top edge */
+    position: fixed;
+    bottom: 80px;       /* above FAB */
+    right: 12px;
+    left: 12px;
+    border-radius: 16px;
+  }
+
+  /* Chatbot root: override default positioning so the fixed
+     window override above works (root is the stacking context) */
+  .chatbot-root {
+    position: static;   /* detach; children use fixed positioning */
+  }
+
+  /* FAB: keep it fixed */
+  .chatbot-fab {
+    position: fixed;
+    bottom: 16px;
+    right: 16px;
+    z-index: 1001;
+  }
+
+  /* Larger tap target for send button */
+  .chatbot-input-row button {
+    width: 44px;
+    height: 44px;
+  }
+
+  /* Input: prevent iOS zoom */
+  .chatbot-input-row input {
+    font-size: 16px;
+  }
+}

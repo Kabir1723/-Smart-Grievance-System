@@ -226,3 +226,67 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── ComplaintDetail mobile gaps ─────────────────────── */
+@media (max-width: 768px) {
+  /* Header action buttons: stack vertically */
+  .complaint-detail-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  /* back-btn: full-width */
+  .back-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Description / status sections: tighter padding */
+  .description-section {
+    padding: 18px 16px;
+  }
+
+  .status-timeline {
+    padding: 18px 16px;
+  }
+
+  /* Feedback textarea */
+  .description-section textarea {
+    font-size: 16px;   /* prevents iOS zoom */
+  }
+
+  /* Timeline: tighten left spacing */
+  .timeline {
+    padding-left: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .detail-header {
+    padding: 18px 16px;
+  }
+
+  .header-content h1 {
+    font-size: 1.4rem;
+  }
+
+  .detail-body {
+    padding: 16px;
+    gap: 20px;
+  }
+
+  .info-item {
+    padding: 14px 12px;
+    gap: 12px;
+  }
+
+  .section-header h2 {
+    font-size: 1.2rem;
+  }
+
+  /* Attachment links: wrap, no overflow */
+  .description-section a {
+    max-width: 100%;
+    overflow-wrap: break-word;
+  }
+}

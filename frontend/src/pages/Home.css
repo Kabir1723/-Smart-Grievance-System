@@ -220,3 +220,57 @@
         font-size: 1.1rem;
     }
 }
+
+/* ── Extend existing 768px block ─────────────────────── */
+@media (max-width: 768px) {
+  /* Stack nav links vertically under the logo */
+  .nav-links {
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+    align-items: center;
+  }
+
+  /* Full-width Sign Up button in nav */
+  .nav-btn.primary {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Hero: remove large margin, tighten padding */
+  .home-main {
+    padding: 40px 16px;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem;
+    padding: 0 4px;
+  }
+
+  /* Features: single column */
+  .features-section {
+    grid-template-columns: 1fr;
+  }
+
+  /* Feature cards: reduce internal padding */
+  .feature-card {
+    padding: 28px 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 2.2rem;
+  }
+
+  .btn-primary.huge {
+    width: 100%;
+    justify-content: center;
+    padding: 14px 24px;
+    font-size: 1rem;
+  }
+
+  .home-navbar {
+    padding: 16px;
+  }
+}

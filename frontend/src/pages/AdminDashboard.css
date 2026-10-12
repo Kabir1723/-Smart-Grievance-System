@@ -439,6 +439,113 @@
   }
 }
 
+/* ── AdminDashboard mobile gaps ──────────────────────── */
+@media (max-width: 768px) {
+  /* Stats: 2-column grid on tablet */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  /* Stat cards: smaller padding */
+  .stat-card {
+    padding: 16px;
+  }
+
+  .stat-icon {
+    width: 44px;
+    height: 44px;
+  }
+
+  .stat-info h3 {
+    font-size: 1.6rem;
+  }
+
+  /* Complaints section: reduce padding */
+  .complaints-section {
+    padding: 20px 16px;
+  }
+
+  .complaints-section h2 {
+    font-size: 1.4rem;
+    margin-bottom: 16px;
+  }
+
+  /* Table: horizontal scroll */
+  .complaints-table {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .complaints-table table {
+    min-width: 700px;   /* force scroll rather than squash */
+  }
+
+  .complaints-table th,
+  .complaints-table td {
+    padding: 12px 10px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+
+  /* Status select: touch-friendly */
+  .status-select {
+    min-height: 44px;
+    font-size: 0.85rem;
+  }
+
+  /* Nav: wrap gracefully */
+  .admin-nav {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .nav-user {
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  /* History modal: near-full-screen */
+  .history-modal {
+    border-radius: var(--radius-lg);
+  }
+
+  .modal-header h2 {
+    font-size: 1.3rem;
+  }
+
+  .timeline {
+    padding-left: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Stats: 1-column on small phones */
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Full-screen modal overlay */
+  .modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .history-modal {
+    max-height: 100vh;
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    width: 100vw;
+  }
+
+  .modal-header {
+    padding: 16px 18px;
+  }
+
+  .modal-content {
+    padding: 18px;
+  }
+}
+
 /* Priority & Status Badge Styles (Duplicated for standalone safety) */
 .badge {
   padding: 6px 12px;

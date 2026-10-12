@@ -223,6 +223,52 @@
   }
 }
 
+/* ── Fill Dashboard mobile gaps ───────────────────────── */
+@media (max-width: 768px) {
+  /* Nav: let user name wrap or hide text on tiny screens */
+  .nav-user {
+    gap: 10px;
+  }
+
+  /* Welcome section: tighten */
+  .welcome-section {
+    margin-bottom: 24px;
+  }
+
+  .welcome-section p {
+    font-size: 0.95rem;
+  }
+
+  /* Stat cards: ensure icon + text don't overflow */
+  .stat-card {
+    padding: 18px;
+  }
+
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    flex-shrink: 0;
+  }
+
+  .stat-info h3 {
+    font-size: 1.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Full-width action buttons with good tap target */
+  .action-btn {
+    padding: 14px 16px;
+    font-size: 0.95rem;
+    min-height: 48px;
+  }
+
+  /* Stats: still 1-col, reduce gap */
+  .stats-grid {
+    gap: 14px;
+  }
+}
+
 /* Priority & Status Badge Styles (Global-ish) */
 .badge {
   padding: 6px 12px;

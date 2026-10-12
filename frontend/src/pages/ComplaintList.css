@@ -210,6 +210,62 @@
   }
 }
 
+/* ── ComplaintList mobile gaps ───────────────────────── */
+@media (max-width: 768px) {
+  /* Filter bar: ensure selects are touch-friendly */
+  .filter-select {
+    min-height: 44px;
+    font-size: 0.9rem;
+    flex: 1 1 140px;   /* allow them to fill row evenly */
+  }
+
+  /* Complaint cards: tighten padding */
+  .complaint-card {
+    padding: 18px 16px;
+  }
+
+  /* Title + badges: allow title to wrap, don't let badges squash it */
+  .complaint-header {
+    flex-direction: column;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .badges {
+    flex-direction: row;   /* keep badges side-by-side */
+    align-items: center;
+  }
+
+  /* Card action buttons */
+  .card-actions {
+    flex-direction: column;
+  }
+
+  .view-btn {
+    width: 100%;
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  .card-header h1 {
+    font-size: 1.6rem;
+  }
+
+  .card-header p {
+    font-size: 0.95rem;
+  }
+
+  .complaint-list-container {
+    padding: 16px 12px;
+  }
+
+  /* Submit first complaint button */
+  .submit-new-btn {
+    width: 100%;
+  }
+}
+
 /* Priority & Status Badge Styles */
 .badge {
   padding: 6px 12px;

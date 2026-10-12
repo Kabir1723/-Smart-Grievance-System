@@ -150,6 +150,55 @@
   }
 }
 
+/* ── SubmitComplaint mobile gaps ─────────────────────── */
+@media (max-width: 768px) {
+  /* Full-width form inputs / selects / textareas */
+  .complaint-form .form-group input,
+  .complaint-form .form-group select,
+  .complaint-form .form-group textarea {
+    width: 100%;
+    min-height: 48px;
+    font-size: 16px;   /* prevents iOS zoom */
+  }
+
+  .complaint-form .form-group textarea {
+    min-height: 120px;
+  }
+
+  .card-header h1 {
+    font-size: 1.7rem;
+  }
+
+  /* Back button: full-width on small screens */
+  .back-btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .submit-complaint-card {
+    padding: 20px 14px;
+    border-radius: var(--radius-lg);
+  }
+
+  .cancel-btn,
+  .submit-btn {
+    padding: 14px 12px;
+    font-size: 0.95rem;
+    min-height: 48px;
+  }
+
+  .card-header h1 {
+    font-size: 1.4rem;
+  }
+
+  .card-header svg {
+    width: 36px;
+    height: 36px;
+  }
+}
+
 /* Priority Badge Styles */
 .badge {
   padding: 6px 12px;

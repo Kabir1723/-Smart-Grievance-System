@@ -175,3 +175,52 @@
     font-size: 1.8rem;
   }
 }
+
+/* ── Extend Auth responsiveness ───────────────────────── */
+@media (max-width: 768px) {
+  .auth-container {
+    padding: 16px;
+    align-items: flex-start;
+    padding-top: 40px;
+  }
+
+  .auth-card {
+    padding: 32px 20px;
+  }
+
+  /* Full-width inputs with comfortable tap target */
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    width: 100%;
+    min-height: 48px;   /* tap target */
+    font-size: 16px;    /* prevents iOS zoom on focus */
+  }
+
+  /* Stack label + icon vertically if needed */
+  .form-group label {
+    font-size: 0.9rem;
+  }
+
+  /* Full-width submit button */
+  .auth-button {
+    width: 100%;
+    min-height: 48px;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 24px 16px;
+    border-radius: var(--radius-lg);
+  }
+
+  .auth-header h1 {
+    font-size: 1.6rem;
+  }
+
+  .auth-form {
+    gap: 18px;
+  }
+}

@@ -378,6 +378,34 @@
   }
 }
 
+/* ── Extend NotificationBell responsiveness ──────────── */
+@media (max-width: 768px) {
+  /* Dropdown: cap to viewport, shift left if needed */
+  .notification-dropdown {
+    width: min(380px, calc(100vw - 20px));
+    right: 0;
+    max-height: 80vh;
+  }
+
+  .notification-list {
+    max-height: calc(80vh - 80px);
+  }
+
+  /* Notification items: slightly tighter */
+  .notification-item {
+    padding: 14px 18px;
+  }
+}
+
+/* Keep dropdown from going off-screen on small phones */
+@media (max-width: 480px) {
+  .notification-dropdown {
+    /* already has right: -12px — ensure it doesn't go off left side */
+    max-width: calc(100vw - 20px);
+    left: auto;
+  }
+}
+
 /* ========================================
    FINAL SOLID BACKGROUND OVERRIDES
 ======================================== */

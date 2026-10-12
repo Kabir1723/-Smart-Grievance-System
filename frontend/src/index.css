@@ -207,3 +207,26 @@ a:hover {
 @keyframes app-spin {
   to { transform: rotate(360deg); }
 }
+
+/* ── Mobile global safety net ────────────────────────── */
+@media (max-width: 768px) {
+  /* Prevent any element from busting the viewport width */
+  html, body {
+    overflow-x: hidden;
+    width: 100%;
+  }
+
+  /* Tighten heading scale so large h1/h2 don't overflow cards */
+  h1 { font-size: 1.9rem; }
+  h2 { font-size: 1.5rem; }
+  h3 { font-size: 1.25rem; }
+
+  /* Make every <img> fluid */
+  img { max-width: 100%; height: auto; }
+}
+
+@media (max-width: 480px) {
+  h1 { font-size: 1.6rem; }
+  h2 { font-size: 1.3rem; }
+  h3 { font-size: 1.1rem; }
+}
