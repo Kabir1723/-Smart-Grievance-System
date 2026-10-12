@@ -1876,6 +1876,71 @@ app.put('/api/admin/complaints/:id/status', authenticateToken, async (req, res) 
   }
 });
 
+// Admin: test email + SMS — calls the real send functions and reports success/failure
+app.post('/api/admin/test-notifications', authenticateToken, async (req, res) => {
+  const results = { email: null, sms: null, config: {} };
+
+  results.config = {
+    EMAIL_USER: process.env.EMAIL_USER || '(not set)',
+    EMAIL_PASSWORD: process.env.EMAIL_PASSWORD && process.env.EMAIL_PASSWORD !== 'your-app-password-here'
+      ? '(set, length=' + process.env.EMAIL_PASSWORD.length + ')' : '(not set / placeholder)',
+    ADMIN_EMAIL: process.env.ADMIN_EMAIL || '(not set)',
+    ADMIN_PHONE: process.env.ADMIN_PHONE || '(not set)',
+    FAST2SMS_API_KEY: process.env.FAST2SMS_API_KEY && process.env.FAST2SMS_API_KEY !== 'your-fast2sms-api-key'
+      ? '(set, length=' + process.env.FAST2SMS_API_KEY.length + ')' : '(not set / placeholder)',
+    FRONTEND_URL: process.env.FRONTEND_URL || '(not set)',
+  };
+
+  // Test email
+  try {
+    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD || process.env.EMAIL_PASSWORD === 'your-app-password-here') {
+      results.email = 'SKIPPED: EMAIL_USER or EMAIL_PASSWORD not set on Render';
+    } else {
+      const nodemailer = require('nodemailer');
+      const transporter = nodemailer.createTransport({
+        service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 587,
+        secure: false,
+        auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASSWORD }
+      });
+      await transporter.sendMail({
+        from: `"Grievance System" <${process.env.EMAIL_USER}>`,
+        to: process.env.ADMIN_EMAIL,
+        subject: 'Test Notification from Grievance System',
+        html: '<h2>Test email is working!</h2><p>Email notifications are configured correctly on Render.</p>'
+      });
+      results.email = 'SUCCESS: test email sent to ' + process.env.ADMIN_EMAIL;
+    }
+  } catch (e) {
+    results.email = 'FAILED: ' + e.message;
+  }
+
+  // Test SMS
+  try {
+    if (!process.env.FAST2SMS_API_KEY || process.env.FAST2SMS_API_KEY === 'your-fast2sms-api-key') {
+      results.sms = 'SKIPPED: FAST2SMS_API_KEY not set on Render';
+    } else {
+      const axios = require('axios');
+      const r = await axios.post('https://www.fast2sms.com/dev/bulkV2', {
+        route: 'v3',
+        sender_id: 'TXTIND',
+        message: 'Test SMS from Grievance System - notifications working!',
+        language: 'english',
+        flash: 0,
+        numbers: process.env.ADMIN_PHONE
+      }, {
+        headers: { 'authorization': process.env.FAST2SMS_API_KEY, 'Content-Type': 'application/json' }
+      });
+      results.sms = 'SUCCESS: ' + JSON.stringify(r.data);
+    }
+  } catch (e) {
+    results.sms = 'FAILED: ' + (e.response ? JSON.stringify(e.response.data) : e.message);
+  }
+
+  res.json(results);
+});
+
 // Get notifications for user
 app.get('/api/notifications', authenticateToken, async (req, res) => {
   try {
