@@ -1,0 +1,228 @@
+.complaint-detail-container {
+  min-height: 100vh;
+  padding: 40px 24px;
+}
+
+.complaint-detail-header {
+  max-width: 900px;
+  margin: 0 auto 24px;
+}
+
+.complaint-detail-card {
+  max-width: 900px;
+  margin: 0 auto;
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  border: 1px solid var(--border-color-light);
+  box-shadow: var(--shadow-xl);
+}
+
+.detail-header {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+  padding: 32px;
+  color: white;
+}
+
+.header-content h1 {
+  font-size: 2.2rem;
+  margin-bottom: 12px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.detail-body {
+  padding: 40px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.info-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+}
+
+.info-item {
+  display: flex;
+  gap: 16px;
+  padding: 20px;
+  background: var(--bg-app);
+  border-radius: var(--radius-md);
+  align-items: flex-start;
+  border: 1px solid var(--border-color-light);
+  transition: all var(--transition-fast);
+}
+
+.info-item:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+  border-color: rgba(99, 102, 241, 0.2);
+}
+
+.info-item svg {
+  color: var(--primary-color);
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+}
+
+.info-item .info-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.info-item label {
+  display: block;
+  font-size: 0.8rem;
+  color: var(--text-light);
+  margin-bottom: 2px;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.info-item p {
+  margin: 0;
+  color: var(--text-dark);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.description-section {
+  background: var(--bg-app);
+  padding: 28px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color-light);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  color: var(--primary-color);
+}
+
+.section-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  color: var(--secondary-color);
+  font-weight: 700;
+}
+
+.description-section p {
+  margin: 0;
+  color: var(--text-dark);
+  line-height: 1.7;
+  font-size: 1.05rem;
+}
+
+.status-timeline {
+  background: var(--bg-app);
+  padding: 28px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color-light);
+}
+
+.status-timeline h3 {
+  margin: 0 0 28px 0;
+  color: var(--secondary-color);
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: relative;
+  padding-left: 36px;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 11px;
+  top: 10px;
+  bottom: 10px;
+  width: 2px;
+  background: var(--border-color);
+}
+
+.timeline-item {
+  position: relative;
+}
+
+.timeline-dot {
+  position: absolute;
+  left: -32.5px;
+  top: 4px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--border-color);
+  border: 4px solid white;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+}
+
+.timeline-item.active .timeline-dot {
+  background: var(--primary-color);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+}
+
+.timeline-content h4 {
+  margin: 0 0 6px 0;
+  color: var(--text-dark);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.timeline-content p {
+  margin: 0;
+  color: var(--text-light);
+  font-size: 0.95rem;
+}
+
+.error-state {
+  text-align: center;
+  padding: 80px 20px;
+  color: var(--danger-color);
+}
+
+.error-state svg {
+  margin-bottom: 24px;
+}
+
+.error-state h3 {
+  font-size: 1.8rem;
+  margin-bottom: 24px;
+  color: var(--text-dark);
+}
+
+@media (max-width: 768px) {
+  .complaint-detail-container {
+    padding: 24px 16px;
+  }
+
+  .detail-header {
+    padding: 24px;
+  }
+
+  .header-content h1 {
+    font-size: 1.8rem;
+  }
+
+  .detail-body {
+    padding: 24px;
+  }
+
+  .info-section {
+    grid-template-columns: 1fr;
+  }
+}

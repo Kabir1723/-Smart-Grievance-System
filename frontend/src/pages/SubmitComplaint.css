@@ -1,0 +1,179 @@
+.submit-complaint-container {
+  min-height: 100vh;
+  padding: 40px 24px;
+}
+
+.submit-complaint-header {
+  max-width: 800px;
+  margin: 0 auto 24px;
+}
+
+.back-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background: var(--bg-white);
+  color: var(--text-dark);
+  border: 1.5px solid var(--border-color);
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+}
+
+.back-btn:hover {
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.submit-complaint-card {
+  max-width: 800px;
+  margin: 0 auto;
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: var(--radius-xl);
+  padding: 40px;
+  border: 1px solid var(--border-color-light);
+  box-shadow: var(--shadow-xl);
+}
+
+.card-header {
+  text-align: center;
+  margin-bottom: 40px;
+  color: var(--primary-color);
+}
+
+.card-header svg {
+  margin-bottom: 16px;
+  width: 48px;
+  height: 48px;
+}
+
+.card-header h1 {
+  font-size: 2.2rem;
+  color: var(--secondary-color);
+  margin-bottom: 12px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.card-header p {
+  color: var(--text-light);
+  font-size: 1.05rem;
+}
+
+.complaint-form {
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.form-actions {
+  display: flex;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.cancel-btn,
+.submit-btn {
+  flex: 1;
+  padding: 16px;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  transition: all var(--transition-fast);
+  box-shadow: var(--shadow-md);
+}
+
+.cancel-btn {
+  background: var(--bg-white);
+  color: var(--text-dark);
+  border: 1.5px solid var(--border-color);
+}
+
+.cancel-btn:hover {
+  border-color: var(--danger-color);
+  color: var(--danger-color);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+}
+
+.submit-btn {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+  color: white;
+}
+
+.submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+}
+
+.submit-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  background: var(--text-light);
+  box-shadow: none;
+}
+
+@media (max-width: 768px) {
+  .submit-complaint-container {
+    padding: 24px 16px;
+  }
+
+  .submit-complaint-card {
+    padding: 32px 24px;
+  }
+
+  .card-header h1 {
+    font-size: 1.8rem;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+}
+
+/* Priority Badge Styles */
+.badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.priority-high {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--danger-color);
+}
+
+.priority-medium {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--warning-color);
+}
+
+.priority-low {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--success-color);
+}
