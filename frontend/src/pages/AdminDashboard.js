@@ -40,13 +40,49 @@ const AdminDashboard = () => {
   const fetchData = async () => {
     setFetchError(null);
     try {
-      const [statsRes, complaintsRes] = await Promise.all([
-        api.get('/admin/stats'),
-        api.get('/admin/complaints')
-      ]);
+      // Fetch complaints first — this endpoint is stable.
+      // Compute stats from complaints as a fallback if /admin/stats is unavailable.
+      const complaintsRes = await api.get('/admin/complaints');
+      const allComplaints = complaintsRes.data.complaints || [];
+      setComplaints(allComplaints);
 
-      setStats(statsRes.data.stats);
-      setComplaints(complaintsRes.data.complaints);
+      // Attempt to fetch server-side stats; fall back to client-computed values
+      // so the dashboard always shows real numbers even if the stats endpoint 500s.
+      let serverStats = null;
+      try {
+        const statsRes = await api.get('/admin/stats');
+        serverStats = statsRes.data.stats;
+      } catch (statsErr) {
+        console.warn('Stats endpoint unavailable, computing from complaints:', statsErr.response?.status);
+      }
+
+      if (serverStats) {
+        setStats(serverStats);
+      } else {
+        // Compute stats client-side from the complaints list
+        const total = allComplaints.length;
+        const pending = allComplaints.filter(c => c.status === 'Pending').length;
+        const inProgress = allComplaints.filter(c => c.status === 'In Progress').length;
+        const resolved = allComplaints.filter(c => c.status === 'Resolved' || c.status === 'Closed').length;
+        const escalated = allComplaints.filter(c => c.status === 'Escalated').length;
+        const highPriority = allComplaints.filter(c => c.priority === 'High').length;
+        const mediumPriority = allComplaints.filter(c => c.priority === 'Medium').length;
+        const lowPriority = allComplaints.filter(c => c.priority === 'Low').length;
+        // unique users by email
+        const uniqueUsers = new Set(allComplaints.map(c => c.user_email)).size;
+        setStats(prev => ({
+          ...prev,
+          totalComplaints: total,
+          pending,
+          inProgress,
+          resolved,
+          escalated,
+          highPriority,
+          mediumPriority,
+          lowPriority,
+          totalUsers: uniqueUsers,
+        }));
+      }
     } catch (error) {
       const msg = error.response?.data?.error || error.message || 'Unknown error';
       const status = error.response?.status;
