@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { FileText, Users, LogOut, Shield, TrendingUp, AlertCircle, CheckCircle, Clock, History } from 'lucide-react';
@@ -27,6 +28,7 @@ const AdminDashboard = () => {
   });
   const [complaints, setComplaints] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
   const [showHistory, setShowHistory] = useState(false);
 
@@ -36,20 +38,20 @@ const AdminDashboard = () => {
   }, []);
 
   const fetchData = async () => {
+    setFetchError(null);
     try {
       const [statsRes, complaintsRes] = await Promise.all([
-        api.get('/admin/stats', {
-          headers: { Authorization: `Bearer ${token}` }
-        }),
-        api.get('/admin/complaints', {
-          headers: { Authorization: `Bearer ${token}` }
-        })
+        api.get('/admin/stats'),
+        api.get('/admin/complaints')
       ]);
 
       setStats(statsRes.data.stats);
       setComplaints(complaintsRes.data.complaints);
     } catch (error) {
-      console.error('Error fetching data:', error);
+      const msg = error.response?.data?.error || error.message || 'Unknown error';
+      const status = error.response?.status;
+      console.error('Error fetching admin data:', status, msg, error);
+      setFetchError(`Failed to load data (${status || 'network error'}): ${msg}`);
     } finally {
       setLoading(false);
     }
@@ -130,6 +132,15 @@ const AdminDashboard = () => {
           <h1>Welcome, Admin!</h1>
           <p>Manage all grievances and monitor system statistics</p>
         </motion.div>
+
+        {fetchError && (
+          <div style={{
+            background: '#fee2e2', border: '1px solid #ef4444', borderRadius: '8px',
+            padding: '12px 16px', marginBottom: '16px', color: '#b91c1c', fontSize: '14px'
+          }}>
+            ⚠ {fetchError} — <button onClick={fetchData} style={{ color: '#b91c1c', textDecoration: 'underline', background: 'none', border: 'none', cursor: 'pointer' }}>Retry</button>
+          </div>
+        )}
 
         <div className="stats-grid">
           <SpotlightCard as={motion.div} className="stat-card" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.1 }}>
