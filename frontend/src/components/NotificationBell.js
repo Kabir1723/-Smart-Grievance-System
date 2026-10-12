@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
+import api from '../services/api';
 import './NotificationBell.css';
 
 const NotificationBell = ({ token }) => {
@@ -31,7 +31,7 @@ const NotificationBell = ({ token }) => {
 
   const fetchUnreadCount = async () => {
     try {
-      const response = await axios.get('http://localhost:5000/api/notifications/unread-count', {
+      const response = await api.get('/notifications/unread-count', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setUnreadCount(response.data.count);
@@ -43,7 +43,7 @@ const NotificationBell = ({ token }) => {
   const fetchNotifications = async () => {
     setLoading(true);
     try {
-      const response = await axios.get('http://localhost:5000/api/notifications', {
+      const response = await api.get('/notifications', {
         headers: { Authorization: `Bearer ${token}` }
       });
       setNotifications(response.data.notifications);
@@ -63,8 +63,8 @@ const NotificationBell = ({ token }) => {
 
   const markAsRead = async (id) => {
     try {
-      await axios.put(
-        `http://localhost:5000/api/notifications/${id}/read`,
+      await api.put(
+        `/notifications/${id}/read`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -77,8 +77,8 @@ const NotificationBell = ({ token }) => {
 
   const markAllAsRead = async () => {
     try {
-      await axios.put(
-        'http://localhost:5000/api/notifications/read-all',
+      await api.put(
+        '/notifications/read-all',
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );

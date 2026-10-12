@@ -5,7 +5,7 @@ import { FileText, Users, LogOut, Shield, TrendingUp, AlertCircle, CheckCircle, 
 import { useAuth } from '../context/AuthContext';
 import NotificationBell from '../components/NotificationBell';
 import SpotlightCard from '../components/SpotlightCard';
-import axios from 'axios';
+import api from '../services/api';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -38,10 +38,10 @@ const AdminDashboard = () => {
   const fetchData = async () => {
     try {
       const [statsRes, complaintsRes] = await Promise.all([
-        axios.get('http://localhost:5000/api/admin/stats', {
+        api.get('/admin/stats', {
           headers: { Authorization: `Bearer ${token}` }
         }),
-        axios.get('http://localhost:5000/api/admin/complaints', {
+        api.get('/admin/complaints', {
           headers: { Authorization: `Bearer ${token}` }
         })
       ]);
@@ -57,8 +57,8 @@ const AdminDashboard = () => {
 
   const handleStatusChange = async (complaintId, newStatus) => {
     try {
-      await axios.put(
-        `http://localhost:5000/api/admin/complaints/${complaintId}/status`,
+      await api.put(
+        `/admin/complaints/${complaintId}/status`,
         { status: newStatus },
         { headers: { Authorization: `Bearer ${token}` } }
       );
