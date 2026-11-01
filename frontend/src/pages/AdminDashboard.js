@@ -27,6 +27,7 @@ const AdminDashboard = () => {
     avgResolutionHours: 0
   });
   const [complaints, setComplaints] = useState([]);
+  const [officers, setOfficers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
   const [selectedComplaint, setSelectedComplaint] = useState(null);
@@ -46,6 +47,13 @@ const AdminDashboard = () => {
       const complaintsRes = await api.get('/admin/complaints');
       const allComplaints = complaintsRes.data.complaints || [];
       setComplaints(allComplaints);
+
+      try {
+        const officersRes = await api.get('/admin/officers');
+        setOfficers(officersRes.data.officers || []);
+      } catch (e) {
+        console.warn('Could not fetch officers for reassign', e);
+      }
 
       // Attempt to fetch server-side stats; fall back to client-computed values
       // so the dashboard always shows real numbers even if the stats endpoint 500s.
@@ -104,6 +112,18 @@ const AdminDashboard = () => {
       fetchData();
     } catch (error) {
       console.error('Error updating status:', error);
+    }
+  };
+
+  const handleReassign = async (complaintId, officerId) => {
+    if (!officerId) return;
+    try {
+      await api.put(`/admin/complaints/${complaintId}/assign`, { officer_id: parseInt(officerId) });
+      toast.success('Complaint reassigned');
+      fetchData();
+    } catch (error) {
+      toast.error('Failed to reassign complaint');
+      console.error('Reassign error:', error);
     }
   };
 
@@ -334,6 +354,8 @@ const AdminDashboard = () => {
                     <th>User</th>
                     <th>Title</th>
                     <th>Category</th>
+                    <th>Assigned Officer</th>
+                    <th>Dept</th>
                     <th>Priority</th>
                     <th>Status</th>
                     <th>SLA Deadline</th>
@@ -354,6 +376,22 @@ const AdminDashboard = () => {
                       </td>
                       <td>{complaint.title}</td>
                       <td>{complaint.category}</td>
+                      <td>
+                        <select
+                          value={complaint.assigned_to || ''}
+                          onChange={(e) => handleReassign(complaint.id, e.target.value)}
+                          className="status-select"
+                          style={{minWidth: '130px'}}
+                        >
+                          <option value="">-- Unassigned --</option>
+                          {officers.map(o => (
+                            <option key={o.id} value={o.id}>
+                              {o.name} ({o.department})
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                      <td>{complaint.officer_department || '—'}</td>
                       <td>
                         <span className={`badge ${getPriorityClass(complaint.priority)}`}>
                           {complaint.priority}

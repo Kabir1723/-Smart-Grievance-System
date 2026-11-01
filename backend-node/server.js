@@ -432,24 +432,59 @@ function calculateSLADeadline(priority) {
   return new Date(now.getTime() + hours * 60 * 60 * 1000);
 }
 
-// Auto-assign officer based on category
+// Auto-assign officer based on category (load-balanced)
 async function autoAssignOfficer(category) {
   try {
-    const [officers] = await pool.query(
-      'SELECT id FROM users WHERE role = "officer" AND department = ? ORDER BY RAND() LIMIT 1',
+    // Step 1: Exact match with load balancing (fewest active complaints)
+    const [exactMatches] = await pool.query(
+      `SELECT u.id, (
+         SELECT COUNT(*) FROM complaints c
+         WHERE c.assigned_to = u.id AND c.status NOT IN ('Resolved','Closed')
+       ) AS active_count
+       FROM users u
+       WHERE u.role = 'officer' AND u.department = ? AND u.is_verified = TRUE
+       ORDER BY active_count ASC LIMIT 1`,
       [category]
     );
-
-    if (officers.length > 0) {
-      return officers[0].id;
+    if (exactMatches.length > 0) {
+      console.log(`[AutoAssign] Exact match: officer ${exactMatches[0].id} for category "${category}" (active: ${exactMatches[0].active_count})`);
+      return exactMatches[0].id;
     }
 
-    // If no officer for specific department, assign to any officer
-    const [anyOfficer] = await pool.query(
-      'SELECT id FROM users WHERE role = "officer" ORDER BY RAND() LIMIT 1'
+    // Step 2: LIKE match with load balancing
+    const [likeMatches] = await pool.query(
+      `SELECT u.id, (
+         SELECT COUNT(*) FROM complaints c
+         WHERE c.assigned_to = u.id AND c.status NOT IN ('Resolved','Closed')
+       ) AS active_count
+       FROM users u
+       WHERE u.role = 'officer' AND u.is_verified = TRUE
+         AND (u.department LIKE ? OR ? LIKE CONCAT('%', u.department, '%'))
+       ORDER BY active_count ASC LIMIT 1`,
+      [`%${category}%`, category]
     );
+    if (likeMatches.length > 0) {
+      console.log(`[AutoAssign] LIKE match: officer ${likeMatches[0].id} for category "${category}" (active: ${likeMatches[0].active_count})`);
+      return likeMatches[0].id;
+    }
 
-    return anyOfficer.length > 0 ? anyOfficer[0].id : null;
+    // Step 3: Least-loaded verified officer fallback
+    const [fallback] = await pool.query(
+      `SELECT u.id, (
+         SELECT COUNT(*) FROM complaints c
+         WHERE c.assigned_to = u.id AND c.status NOT IN ('Resolved','Closed')
+       ) AS active_count
+       FROM users u
+       WHERE u.role = 'officer' AND u.is_verified = TRUE
+       ORDER BY active_count ASC LIMIT 1`
+    );
+    if (fallback.length > 0) {
+      console.log(`[AutoAssign] Fallback (least loaded): officer ${fallback[0].id} for category "${category}" (active: ${fallback[0].active_count})`);
+      return fallback[0].id;
+    }
+
+    console.warn(`[AutoAssign] No officer available for category "${category}"`);
+    return null;
   } catch (error) {
     console.error('Auto-assign error:', error);
     return null;
@@ -1038,27 +1073,30 @@ app.get('/api/complaints', authenticateToken, async (req, res) => {
     const sortColumn = allowedSortColumns.includes(sort) ? sort : 'created_at';
     const sortOrder = String(order).toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
-    let query = 'SELECT * FROM complaints WHERE user_id = ? AND is_deleted = FALSE';
+    let query = `SELECT c.*, o.name as officer_name, o.department as officer_department
+      FROM complaints c
+      LEFT JOIN users o ON c.assigned_to = o.id
+      WHERE c.user_id = ? AND c.is_deleted = FALSE`;
     const params = [req.userId];
 
     if (search) {
-      query += ' AND (title LIKE ? OR description LIKE ?)';
+      query += ' AND (c.title LIKE ? OR c.description LIKE ?)';
       params.push(`%${search}%`, `%${search}%`);
     }
     if (status) {
-      query += ' AND status = ?';
+      query += ' AND c.status = ?';
       params.push(status);
     }
     if (category) {
-      query += ' AND category = ?';
+      query += ' AND c.category = ?';
       params.push(category);
     }
     if (priority) {
-      query += ' AND priority = ?';
+      query += ' AND c.priority = ?';
       params.push(priority);
     }
 
-    query += ` ORDER BY ${sortColumn} ${sortOrder}`;
+    query += ` ORDER BY c.${sortColumn} ${sortOrder}`;
 
     const [complaints] = await pool.query(query, params);
 
@@ -1704,7 +1742,10 @@ app.delete('/api/complaints/:id', authenticateToken, async (req, res) => {
 app.get('/api/complaints/:id', authenticateToken, async (req, res) => {
   try {
     const [complaints] = await pool.query(
-      'SELECT * FROM complaints WHERE id = ? AND user_id = ?',
+      `SELECT c.*, o.name as officer_name, o.department as officer_department
+       FROM complaints c
+       LEFT JOIN users o ON c.assigned_to = o.id
+       WHERE c.id = ? AND c.user_id = ?`,
       [req.params.id, req.userId]
     );
 
@@ -1771,11 +1812,12 @@ app.post('/api/admin/login', async (req, res) => {
 app.get('/api/admin/complaints', authenticateToken, async (req, res) => {
   try {
     const [complaints] = await pool.query(`
-      SELECT c.id, c.title, c.description, c.category, c.location, c.priority, c.status,
-             c.created_at, c.updated_at,
-             u.name as user_name, u.email as user_email, u.phone as user_phone
+      SELECT c.*,
+        u.name as user_name, u.email as user_email, u.phone as user_phone,
+        o.name as officer_name, o.department as officer_department
       FROM complaints c
       JOIN users u ON c.user_id = u.id
+      LEFT JOIN users o ON c.assigned_to = o.id
       ORDER BY c.created_at DESC
     `);
 
@@ -1883,6 +1925,65 @@ app.put('/api/admin/complaints/:id/status', authenticateToken, async (req, res) 
   } catch (error) {
     console.error('Update status error:', error);
     res.status(500).json({ error: 'Failed to update status' });
+  }
+});
+
+// Admin manually re-assigns a complaint to a different officer
+app.put('/api/admin/complaints/:id/assign', authenticateToken, async (req, res) => {
+  if (req.userRole !== 'admin') return res.status(403).json({ error: 'Admin access required' });
+  try {
+    const complaintId = req.params.id;
+    const { officer_id } = req.body;
+
+    if (!officer_id) {
+      return res.status(400).json({ error: 'officer_id is required' });
+    }
+
+    // Validate officer exists and has role="officer"
+    const [officers] = await pool.query(
+      'SELECT id, name FROM users WHERE id = ? AND role = "officer"',
+      [officer_id]
+    );
+    if (officers.length === 0) {
+      return res.status(404).json({ error: 'Officer not found' });
+    }
+    const officer = officers[0];
+
+    // Get complaint and current owner
+    const [complaints] = await pool.query(
+      'SELECT id, user_id, title FROM complaints WHERE id = ?',
+      [complaintId]
+    );
+    if (complaints.length === 0) {
+      return res.status(404).json({ error: 'Complaint not found' });
+    }
+    const complaint = complaints[0];
+
+    await pool.query(
+      'UPDATE complaints SET assigned_to = ? WHERE id = ?',
+      [officer_id, complaintId]
+    );
+
+    // Notify new officer
+    await createNotification(
+      officer_id,
+      complaintId,
+      `Complaint #${complaintId} has been assigned to you`,
+      'assignment'
+    );
+
+    // Notify complaint owner
+    await createNotification(
+      complaint.user_id,
+      complaintId,
+      `Your complaint is now being handled by ${officer.name}`,
+      'info'
+    );
+
+    res.json({ message: 'Complaint reassigned successfully', officer_id, officer_name: officer.name });
+  } catch (error) {
+    console.error('Reassign complaint error:', error);
+    res.status(500).json({ error: 'Failed to reassign complaint' });
   }
 });
 
@@ -2048,8 +2149,10 @@ app.post('/api/officer/login', async (req, res) => {
 app.get('/api/officer/complaints', authenticateToken, async (req, res) => {
   try {
     const [complaints] = await pool.query(
-      `SELECT c.*, u.name as user_name, u.email as user_email, u.phone as user_phone
+      `SELECT c.*, u.name as user_name, u.email as user_email, u.phone as user_phone,
+              o.name as officer_name, o.department as officer_department
        FROM complaints c JOIN users u ON c.user_id = u.id
+       LEFT JOIN users o ON c.assigned_to = o.id
        WHERE c.assigned_to = ? AND c.is_deleted = FALSE
        ORDER BY c.created_at DESC`,
       [req.userId]

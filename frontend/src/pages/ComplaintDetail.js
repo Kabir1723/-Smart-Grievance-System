@@ -255,6 +255,13 @@ const ComplaintDetail = () => {
               </div>
             )}
 
+            {complaint.officer_name && (
+              <div className="detail-item">
+                <strong>Assigned Officer:</strong>
+                <span>{complaint.officer_name} — {complaint.officer_department}</span>
+              </div>
+            )}
+
             <div className="info-item">
               <Calendar size={20} />
               <div>

@@ -229,6 +229,11 @@ const ComplaintList = () => {
                   )}
                   <p className="description">{complaint.description}</p>
                   <p className="date">Submitted: {new Date(complaint.created_at).toLocaleDateString()}</p>
+                  {complaint.officer_name && (
+                    <div className="complaint-officer">
+                      <small>Handled by: <strong>{complaint.officer_name}</strong> ({complaint.officer_department})</small>
+                    </div>
+                  )}
                 </div>
 
                 <div className="card-actions" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
