@@ -1951,7 +1951,7 @@ app.put('/api/admin/complaints/:id/assign', authenticateToken, async (req, res) 
 
     // Get complaint and current owner
     const [complaints] = await pool.query(
-      'SELECT id, user_id, title FROM complaints WHERE id = ?',
+      'SELECT id, user_id, title FROM complaints WHERE id = ? AND is_deleted = FALSE',
       [complaintId]
     );
     if (complaints.length === 0) {
@@ -1982,8 +1982,8 @@ app.put('/api/admin/complaints/:id/assign', authenticateToken, async (req, res) 
 
     res.json({ message: 'Complaint reassigned successfully', officer_id, officer_name: officer.name });
   } catch (error) {
-    console.error('Reassign complaint error:', error);
-    res.status(500).json({ error: 'Failed to reassign complaint' });
+    console.error('Reassign complaint error:', error.message, error.stack);
+    res.status(500).json({ error: 'Failed to reassign complaint', detail: error.message });
   }
 });
 
