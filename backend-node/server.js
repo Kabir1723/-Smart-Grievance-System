@@ -1941,7 +1941,7 @@ app.put('/api/admin/complaints/:id/assign', authenticateToken, async (req, res) 
 
     // Validate officer exists and has role="officer"
     const [officers] = await pool.query(
-      'SELECT id, name FROM users WHERE id = ? AND role = "officer"',
+      "SELECT id, name FROM users WHERE id = ? AND role = 'officer'",
       [officer_id]
     );
     if (officers.length === 0) {
