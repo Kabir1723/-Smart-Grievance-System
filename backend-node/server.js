@@ -755,6 +755,7 @@ function authenticateToken(req, res, next) {
       return res.status(403).json({ error: 'Invalid or expired token' });
     }
     req.userId = user.id;
+    req.userRole = user.role || null;
     next();
   });
 }
@@ -2113,6 +2114,7 @@ app.get('/api/officer/stats', authenticateToken, async (req, res) => {
 
 // ── Admin: list officers ───────────────────────────────────────────────────
 app.get('/api/admin/officers', authenticateToken, async (req, res) => {
+  if (req.userRole !== 'admin') return res.status(403).json({ error: 'Admin access required' });
   try {
     const [officers] = await pool.query(
       'SELECT id, name, email, phone, department, is_verified, created_at FROM users WHERE role = ?',
@@ -2127,6 +2129,7 @@ app.get('/api/admin/officers', authenticateToken, async (req, res) => {
 
 // ── Admin: create officer ──────────────────────────────────────────────────
 app.post('/api/admin/officers', authenticateToken, async (req, res) => {
+  if (req.userRole !== 'admin') return res.status(403).json({ error: 'Admin access required' });
   try {
     const { name, email, phone, password, department } = req.body;
     if (!name || !email || !phone || !password || !department) {
@@ -2149,6 +2152,7 @@ app.post('/api/admin/officers', authenticateToken, async (req, res) => {
 
 // ── Admin: delete officer ──────────────────────────────────────────────────
 app.delete('/api/admin/officers/:id', authenticateToken, async (req, res) => {
+  if (req.userRole !== 'admin') return res.status(403).json({ error: 'Admin access required' });
   try {
     const [users] = await pool.query('SELECT id, role FROM users WHERE id = ?', [req.params.id]);
     if (users.length === 0 || users[0].role !== 'officer') {
@@ -2164,6 +2168,7 @@ app.delete('/api/admin/officers/:id', authenticateToken, async (req, res) => {
 
 // ── Admin: update officer ──────────────────────────────────────────────────
 app.put('/api/admin/officers/:id', authenticateToken, async (req, res) => {
+  if (req.userRole !== 'admin') return res.status(403).json({ error: 'Admin access required' });
   try {
     const { name, email, phone, department } = req.body;
     const [users] = await pool.query('SELECT id FROM users WHERE id = ? AND role = ?', [req.params.id, 'officer']);
