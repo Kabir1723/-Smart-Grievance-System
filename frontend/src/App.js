@@ -10,6 +10,8 @@ import ComplaintList from './pages/ComplaintList';
 import ComplaintDetail from './pages/ComplaintDetail';
 import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
+import OfficerLogin from './pages/OfficerLogin';
+import OfficerDashboard from './pages/OfficerDashboard';
 import Home from './pages/Home';
 import ForgotPassword from './pages/ForgotPassword';
 import ResetPassword from './pages/ResetPassword';
@@ -43,6 +45,8 @@ function App() {
               <Route path="/complaints/:id" element={<PrivateRoute><ComplaintDetail /></PrivateRoute>} />
               <Route path="/admin/login" element={<AdminLogin />} />
               <Route path="/admin/dashboard" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />
+              <Route path="/officer/login" element={<OfficerLogin />} />
+              <Route path="/officer/dashboard" element={<PrivateRoute><OfficerDashboard /></PrivateRoute>} />
               <Route path="/" element={<Home />} />
             </Routes>
             <ChatbotWidget />

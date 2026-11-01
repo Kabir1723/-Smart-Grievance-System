@@ -1,0 +1,247 @@
+.officer-dashboard-container {
+  min-height: 100vh;
+}
+
+.officer-nav {
+  background: var(--bg-card);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 16px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--border-color-light);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: var(--shadow-sm);
+}
+
+.officer-content {
+  padding: 40px 32px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ── Department badge ─────────────────────────────────────────────────────── */
+.department-badge {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* ── Stats grid (mirrors AdminDashboard) ──────────────────────────────────── */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 24px;
+  margin-bottom: 48px;
+}
+
+/* ── Complaints section ───────────────────────────────────────────────────── */
+.complaints-section {
+  background: var(--bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  border: 1px solid var(--border-color-light);
+  box-shadow: var(--shadow-md);
+  margin-bottom: 40px;
+}
+
+.complaints-section h2 {
+  margin-bottom: 24px;
+  color: var(--secondary-color);
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.complaints-table {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  box-shadow: 0 0 0 1px var(--border-color-light);
+}
+
+.complaints-table table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bg-white);
+}
+
+.complaints-table th {
+  background: #f8fafc;
+  padding: 16px 20px;
+  text-align: left;
+  font-weight: 700;
+  color: var(--text-dark);
+  border-bottom: 2px solid var(--border-color);
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.complaints-table td {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border-color-light);
+  color: var(--text-dark);
+  font-size: 0.95rem;
+  vertical-align: middle;
+}
+
+.complaints-table tr:hover td {
+  background: var(--bg-app);
+}
+
+/* ── Status select ────────────────────────────────────────────────────────── */
+.status-select {
+  padding: 8px 12px;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  cursor: pointer;
+  background: var(--bg-white);
+  color: var(--text-dark);
+  transition: all var(--transition-fast);
+  font-weight: 500;
+}
+
+.status-select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+/* ── Utility ──────────────────────────────────────────────────────────────── */
+.loading,
+.empty-state {
+  text-align: center;
+  padding: 60px;
+  color: var(--text-light);
+  font-size: 1.1rem;
+  font-weight: 500;
+}
+
+/* ── Badge styles (priority & status) ────────────────────────────────────── */
+.badge {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+  box-shadow: var(--shadow-sm);
+}
+
+.priority-high {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--danger-color);
+}
+
+.priority-medium {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--warning-color);
+}
+
+.priority-low {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--success-color);
+}
+
+.status-pending {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--warning-color);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.status-progress {
+  background: rgba(139, 92, 246, 0.15);
+  color: #7c3aed;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+.status-resolved {
+  background: rgba(16, 185, 129, 0.15);
+  color: var(--success-color);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.status-escalated {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--danger-color);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+/* ── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .officer-nav {
+    padding: 16px 20px;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+
+  .nav-user {
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .officer-content {
+    padding: 24px 20px;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+  }
+
+  .complaints-section {
+    padding: 20px 16px;
+  }
+
+  .complaints-section h2 {
+    font-size: 1.4rem;
+    margin-bottom: 16px;
+  }
+
+  .complaints-table {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .complaints-table table {
+    min-width: 650px;
+  }
+
+  .complaints-table th,
+  .complaints-table td {
+    padding: 12px 10px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+  }
+
+  .status-select {
+    min-height: 44px;
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .officer-nav {
+    padding: 14px 16px;
+  }
+
+  .officer-content {
+    padding: 16px 12px;
+  }
+}

@@ -35,6 +35,7 @@ const Home = () => {
                     ) : (
                         <>
                             <Link to="/login" className="nav-link">Login</Link>
+                            <Link to="/officer/login" className="nav-link">Officer Login</Link>
                             <Link to="/register" className="nav-btn primary">Sign Up</Link>
                         </>
                     )}

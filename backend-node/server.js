@@ -71,11 +71,13 @@ const upload = multer({
 });
 
 // Email transporter — port 465 SSL works on Render free tier (587 is blocked).
+// family: 4 forces IPv4 because Render cannot reach smtp.gmail.com over IPv6.
 function createEmailTransporter() {
   return nodemailer.createTransport({
     host: 'smtp.gmail.com',
     port: 465,
     secure: true,   // SSL
+    family: 4,
     connectionTimeout: 10000,
     greetingTimeout: 10000,
     socketTimeout: 15000,
@@ -2013,6 +2015,168 @@ app.use((err, req, res, next) => {
     return res.status(400).json({ error: 'Unsupported file type. Allowed: images, PDF, Word documents, and text files.' });
   }
   next(err);
+});
+
+// ── Officer Login ──────────────────────────────────────────────────────────
+app.post('/api/officer/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) return res.status(400).json({ error: 'Email and password are required' });
+    const [users] = await pool.query('SELECT * FROM users WHERE email = ? AND role = ?', [email, 'officer']);
+    if (users.length === 0) return res.status(401).json({ error: 'Invalid officer credentials' });
+    const user = users[0];
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) return res.status(401).json({ error: 'Invalid officer credentials' });
+    const token = jwt.sign(
+      { id: user.id, role: user.role, department: user.department },
+      process.env.JWT_SECRET_KEY || 'your-secret-key',
+      { expiresIn: '24h' }
+    );
+    res.json({
+      message: 'Officer login successful',
+      token,
+      user: { id: user.id, name: user.name, email: user.email, role: user.role, department: user.department }
+    });
+  } catch (error) {
+    console.error('Officer login error:', error);
+    res.status(500).json({ error: 'Login failed' });
+  }
+});
+
+// ── Officer: get own complaints ────────────────────────────────────────────
+app.get('/api/officer/complaints', authenticateToken, async (req, res) => {
+  try {
+    const [complaints] = await pool.query(
+      `SELECT c.*, u.name as user_name, u.email as user_email, u.phone as user_phone
+       FROM complaints c JOIN users u ON c.user_id = u.id
+       WHERE c.assigned_to = ? AND c.is_deleted = FALSE
+       ORDER BY c.created_at DESC`,
+      [req.userId]
+    );
+    res.json({ complaints });
+  } catch (error) {
+    console.error('Officer get complaints error:', error);
+    res.status(500).json({ error: 'Failed to fetch complaints' });
+  }
+});
+
+// ── Officer: update complaint status ──────────────────────────────────────
+app.put('/api/officer/complaints/:id/status', authenticateToken, async (req, res) => {
+  try {
+    const { status } = req.body;
+    const allowedStatuses = ['In Progress', 'Resolved', 'Closed'];
+    if (!status || !allowedStatuses.includes(status)) {
+      return res.status(400).json({ error: 'Status must be In Progress, Resolved, or Closed' });
+    }
+    const [complaints] = await pool.query(
+      'SELECT * FROM complaints WHERE id = ? AND assigned_to = ? AND is_deleted = FALSE',
+      [req.params.id, req.userId]
+    );
+    if (complaints.length === 0) return res.status(404).json({ error: 'Complaint not found or not assigned to you' });
+    const complaint = complaints[0];
+    const resolvedAt = (status === 'Resolved' || status === 'Closed') ? new Date() : null;
+    await pool.query(
+      'UPDATE complaints SET status = ?, updated_at = NOW(), resolved_at = ? WHERE id = ?',
+      [status, resolvedAt, req.params.id]
+    );
+    await createNotification(
+      complaint.user_id,
+      req.params.id,
+      `Your complaint "${complaint.title}" has been updated to ${status} by an officer`,
+      status === 'Resolved' ? 'success' : 'info'
+    );
+    res.json({ message: 'Status updated successfully' });
+  } catch (error) {
+    console.error('Officer update status error:', error);
+    res.status(500).json({ error: 'Failed to update status' });
+  }
+});
+
+// ── Officer: stats ─────────────────────────────────────────────────────────
+app.get('/api/officer/stats', authenticateToken, async (req, res) => {
+  try {
+    const [rows] = await pool.query(
+      `SELECT
+         COUNT(*) as total,
+         SUM(CASE WHEN status = 'Pending' THEN 1 ELSE 0 END) as pending,
+         SUM(CASE WHEN status = 'In Progress' THEN 1 ELSE 0 END) as inProgress,
+         SUM(CASE WHEN status IN ('Resolved','Closed') THEN 1 ELSE 0 END) as resolved
+       FROM complaints WHERE assigned_to = ? AND is_deleted = FALSE`,
+      [req.userId]
+    );
+    res.json({ stats: rows[0] });
+  } catch (error) {
+    console.error('Officer stats error:', error);
+    res.status(500).json({ error: 'Failed to fetch stats' });
+  }
+});
+
+// ── Admin: list officers ───────────────────────────────────────────────────
+app.get('/api/admin/officers', authenticateToken, async (req, res) => {
+  try {
+    const [officers] = await pool.query(
+      'SELECT id, name, email, phone, department, is_verified, created_at FROM users WHERE role = ?',
+      ['officer']
+    );
+    res.json({ officers });
+  } catch (error) {
+    console.error('Get officers error:', error);
+    res.status(500).json({ error: 'Failed to fetch officers' });
+  }
+});
+
+// ── Admin: create officer ──────────────────────────────────────────────────
+app.post('/api/admin/officers', authenticateToken, async (req, res) => {
+  try {
+    const { name, email, phone, password, department } = req.body;
+    if (!name || !email || !phone || !password || !department) {
+      return res.status(400).json({ error: 'All fields are required' });
+    }
+    const [existing] = await pool.query('SELECT id FROM users WHERE email = ?', [email]);
+    if (existing.length > 0) return res.status(400).json({ error: 'Email already registered' });
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const [result] = await pool.query(
+      `INSERT INTO users (name, email, phone, password, department, role, is_verified, created_at)
+       VALUES (?, ?, ?, ?, ?, 'officer', TRUE, NOW())`,
+      [name, email, phone, hashedPassword, department]
+    );
+    res.status(201).json({ message: 'Officer created successfully', id: result.insertId });
+  } catch (error) {
+    console.error('Create officer error:', error);
+    res.status(500).json({ error: 'Failed to create officer' });
+  }
+});
+
+// ── Admin: delete officer ──────────────────────────────────────────────────
+app.delete('/api/admin/officers/:id', authenticateToken, async (req, res) => {
+  try {
+    const [users] = await pool.query('SELECT id, role FROM users WHERE id = ?', [req.params.id]);
+    if (users.length === 0 || users[0].role !== 'officer') {
+      return res.status(404).json({ error: 'Officer not found' });
+    }
+    await pool.query('DELETE FROM users WHERE id = ?', [req.params.id]);
+    res.json({ message: 'Officer deleted successfully' });
+  } catch (error) {
+    console.error('Delete officer error:', error);
+    res.status(500).json({ error: 'Failed to delete officer' });
+  }
+});
+
+// ── Admin: update officer ──────────────────────────────────────────────────
+app.put('/api/admin/officers/:id', authenticateToken, async (req, res) => {
+  try {
+    const { name, email, phone, department } = req.body;
+    const [users] = await pool.query('SELECT id FROM users WHERE id = ? AND role = ?', [req.params.id, 'officer']);
+    if (users.length === 0) return res.status(404).json({ error: 'Officer not found' });
+    await pool.query(
+      'UPDATE users SET name = ?, email = ?, phone = ?, department = ? WHERE id = ?',
+      [name, email, phone, department, req.params.id]
+    );
+    res.json({ message: 'Officer updated successfully' });
+  } catch (error) {
+    console.error('Update officer error:', error);
+    res.status(500).json({ error: 'Failed to update officer' });
+  }
 });
 
 // Serve Frontend Static Files
