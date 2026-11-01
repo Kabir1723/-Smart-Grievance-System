@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
 import { motion } from 'framer-motion';
 import { FileText, Users, LogOut, Shield, TrendingUp, AlertCircle, CheckCircle, Clock, History } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -558,7 +559,7 @@ const OfficerManagement = () => {
       setShowAddForm(false);
       fetchOfficers();
     } catch (err) {
-      alert(err.response?.data?.error || 'Failed to create officer');
+      toast.error(err.response?.data?.error || 'Failed to create officer');
     }
   };
 
@@ -568,7 +569,7 @@ const OfficerManagement = () => {
       await api.delete(`/admin/officers/${id}`);
       fetchOfficers();
     } catch (err) {
-      alert(err.response?.data?.error || 'Failed to delete officer');
+      toast.error(err.response?.data?.error || 'Failed to delete officer');
     }
   };
 
@@ -584,7 +585,7 @@ const OfficerManagement = () => {
       setEditingOfficer(null);
       fetchOfficers();
     } catch (err) {
-      alert(err.response?.data?.error || 'Failed to update officer');
+      toast.error(err.response?.data?.error || 'Failed to update officer');
     }
   };
 
